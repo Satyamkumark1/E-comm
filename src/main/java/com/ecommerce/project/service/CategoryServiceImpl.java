@@ -2,6 +2,7 @@ package com.ecommerce.project.service;
 
 import com.ecommerce.project.model.Category;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -37,19 +38,33 @@ public class CategoryServiceImpl implements CategoryService{
     }
 
     @Override
-    public Category updateCategory(Category category, Long categoryID) {
-        Optional<Category> optionalCategory = categories.stream()
-                .filter(c -> c.getCategoryId().equals(categoryID))
+    public Category updateCatgory(Category category, Long categoryId) {
+        Optional<Category> optionalCategory =  categories.stream().filter(category1 -> category1.getCategoryId()
+                .equals(categoryId))
                 .findFirst();
 
-        if (optionalCategory.isPresent()){
+        if(optionalCategory.isPresent()){
             Category existingCategory = optionalCategory.get();
             existingCategory.setCategoryName(category.getCategoryName());
             return  existingCategory;
-        } else  {
-           throw   new ResponseStatusException(HttpStatus.NOT_FOUND,"Category Id " + categoryID +" Is not found" );
+        } else {
+            throw   new ResponseStatusException(HttpStatus.NOT_FOUND ,"category not find");
         }
 
+    }
+
+    @Override
+    public Category searchCategoryById(Long categoryId) {
+        Optional<Category> optionalCategory =  categories.stream().filter(category1 -> category1.getCategoryId()
+                        .equals(categoryId))
+                .findFirst();
+        if (optionalCategory.isPresent()){
+            Category existingCategory = optionalCategory.get();
+            return  existingCategory;
+        }
+        else {
+            throw   new ResponseStatusException(HttpStatus.NOT_FOUND ,"category not find");
+        }
 
     }
 
