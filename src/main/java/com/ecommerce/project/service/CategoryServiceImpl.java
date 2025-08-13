@@ -1,72 +1,64 @@
 package com.ecommerce.project.service;
 
 import com.ecommerce.project.model.Category;
+import com.ecommerce.project.repositery.CategoryRepositry;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
-public class CategoryServiceImpl implements CategoryService{
-    private List<Category> categories = new ArrayList<>();
+public class CategoryServiceImpl implements CategoryService {
+    //    private List<Category> categories = new ArrayList<>();
+    @Autowired
+    private CategoryRepositry categoryRepositry;
     private Long nextId = 1L;
+
 
     @Override
     public List<Category> getAllCategories() {
-        return categories;
+        return categoryRepositry.findAll();
     }
 
     @Override
     public void createCategory(Category category) {
-        category.setCategoryId(nextId++);
-        categories.add(category);
+
+        categoryRepositry.save(category);
     }
 
     @Override
     public String deleteCategory(Long categoryId) {
-        Category category = categories.stream()
-                .filter(c -> c.getCategoryId().equals(categoryId))
-                .findFirst()
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Resource not found"));
 
-        categories.remove(category);
-        return "Category with categoryId: " + categoryId + " deleted successfully !!";
+        Category  category = categoryRepositry.findById(categoryId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        categoryRepositry.delete(category);
+        return  "Category with Id" + categoryId +" is successfully deleted ";
     }
 
     @Override
-    public Category updateCatgory(Category category, Long categoryId) {
-        Optional<Category> optionalCategory =  categories.stream().filter(category1 -> category1.getCategoryId()
-                .equals(categoryId))
+    public Object updateCatgory(Category category, Long categoryId) {
+        List<Category> categories = categoryRepositry.findAll();
+        Optional<Category> optionalCategory = categories.stream().filter(category1 -> category1.getCategoryId()
+                        .equals(categoryId))
                 .findFirst();
 
-        if(optionalCategory.isPresent()){
+        if (optionalCategory.isPresent()) {
             Category existingCategory = optionalCategory.get();
             existingCategory.setCategoryName(category.getCategoryName());
-            return  existingCategory;
+            Category savedCategory = categoryRepositry.save(existingCategory);
+            return savedCategory +" Category with Id" +categoryId + "Is been updated";
         } else {
-            throw   new ResponseStatusException(HttpStatus.NOT_FOUND ,"category not find");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "category not find");
         }
 
     }
 
     @Override
     public Category searchCategoryById(Long categoryId) {
-        Optional<Category> optionalCategory =  categories.stream().filter(category1 -> category1.getCategoryId()
-                        .equals(categoryId))
-                .findFirst();
-        if (optionalCategory.isPresent()){
-            Category existingCategory = optionalCategory.get();
-            return  existingCategory;
-        }
-        else {
-            throw   new ResponseStatusException(HttpStatus.NOT_FOUND ,"category not find");
-        }
-
+        return categoryRepositry.findById(categoryId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found"));
     }
-
-
 }
