@@ -59,8 +59,6 @@ public class CategoryController {
 
 
     //Deleting Category By Id
-
-
     @DeleteMapping("/admin/categories/{categoryId}")
     public ResponseEntity<String> deleteCategory(@PathVariable Long categoryId){
         try {
