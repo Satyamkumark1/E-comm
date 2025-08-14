@@ -14,6 +14,7 @@ import java.util.Optional;
 public class CategoryServiceImpl implements CategoryService {
     //    private List<Category> categories = new ArrayList<>();
 
+    @Autowired
     private CategoryRepositry categoryRepositry;
 
 
@@ -42,20 +43,13 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public Object updateCatgory(Category category, Long categoryId) {
-        List<Category> categories = categoryRepositry.findAll();
-        Optional<Category> optionalCategory = categories.stream().filter(category1 -> category1.getCategoryId()
-                        .equals(categoryId))
-                .findFirst();
+    public Category updateCatgory(Category category, Long categoryId) {
+        Category savedCategory = categoryRepositry.findById(categoryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Category","categoryId",categoryId));
 
-        if (optionalCategory.isPresent()) {
-            Category existingCategory = optionalCategory.get();
-            existingCategory.setCategoryName(category.getCategoryName());
-            Category savedCategory = categoryRepositry.save(existingCategory);
-            return savedCategory +" Category with Id" +categoryId + "Is been updated";
-        } else {
-            throw new ResourceNotFoundException("category", "categoryId" ,categoryId);
-        }
+        category.setCategoryId(categoryId);
+        savedCategory = categoryRepositry.save(category);
+        return savedCategory;
 
     }
 
