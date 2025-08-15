@@ -1,6 +1,8 @@
 package com.ecommerce.project.controller;
 
 import com.ecommerce.project.model.Category;
+import com.ecommerce.project.payload.CategoryDTO;
+import com.ecommerce.project.payload.CategoryResponse;
 import com.ecommerce.project.service.CategoryService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,20 +21,26 @@ public class CategoryController {
     @Autowired
     private CategoryService categoryService;
 
+    @GetMapping("/echo")
+    public ResponseEntity<String> echoMessage(@RequestParam(name = "message",defaultValue = "hello world") String message){
+        return new ResponseEntity<>("echoed message:" +message,HttpStatus.OK);
+
+    }
+
 
     //Getting all  categories
     @RequestMapping(value = "/public/categories", method = RequestMethod.GET)
-    public ResponseEntity<List<Category>> getAllCategories(){
-        List<Category> categories = categoryService.getAllCategories();
+    public ResponseEntity<CategoryResponse> getAllCategories(){
+        com.ecommerce.project.payload.CategoryResponse categoryResponse = categoryService.getAllCategories();
 
-        return new ResponseEntity<>(categories, HttpStatus.OK);
+        return new ResponseEntity<>(categoryResponse, HttpStatus.OK);
     }
 
     //Creating  Category
     @RequestMapping(value = "/public/categories", method = RequestMethod.POST)
-    public ResponseEntity<String> createCategory( @Valid @RequestBody Category category){
-        categoryService.createCategory(category);
-        return new ResponseEntity<>("Category added successfully", HttpStatus.CREATED);
+    public ResponseEntity<CategoryDTO> createCategory( @Valid @RequestBody CategoryDTO categoryDTO){
+       CategoryDTO savedCategoryDTO = categoryService.createCategory(categoryDTO);
+        return new ResponseEntity<>(savedCategoryDTO,HttpStatus.CREATED);
     }
 
     //Getting CategoryById
@@ -47,19 +55,26 @@ public class CategoryController {
     //Updating Category By Id
 
     @PutMapping("/admin/categories/{categoryId}")
-    public ResponseEntity<String> updateCategory(@RequestBody Category category , @PathVariable Long categoryId){
-        Category savedCategory = (Category) categoryService.updateCatgory(category,categoryId);
-        return  new ResponseEntity<>( "Category with id "+categoryId + "is updated",HttpStatus.OK);
-
+    public ResponseEntity<CategoryDTO> updateCategory(@RequestBody CategoryDTO categoryDTO, @PathVariable Long categoryId) {
+        CategoryDTO savedCategoryDTO = categoryService.updateCatgory(categoryDTO, categoryId);
+        return new ResponseEntity<>(savedCategoryDTO, HttpStatus.OK);
     }
+    @PostMapping("/bulk")
+    public List<CategoryDTO> createCategories(@RequestBody List<CategoryDTO> dtos) {
+        return dtos.stream()
+                .map(categoryService::createCategory)
+                .toList();
+    }
+
+
 
 
 
     //Deleting Category By Id
     @DeleteMapping("/admin/categories/{categoryId}")
-    public ResponseEntity<String> deleteCategory(@PathVariable Long categoryId){
+    public ResponseEntity<CategoryDTO> deleteCategory(@PathVariable Long categoryId){
 
-            String status = categoryService.deleteCategory(categoryId);
-            return  new ResponseEntity<>(status,HttpStatus.OK);
+            CategoryDTO deletedObject = categoryService.deleteCategory(categoryId);
+            return  new ResponseEntity<>(deletedObject,HttpStatus.OK);
     }
 }
