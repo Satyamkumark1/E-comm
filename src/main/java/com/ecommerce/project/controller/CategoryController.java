@@ -45,16 +45,17 @@ public class CategoryController {
         return new ResponseEntity<>(savedCategoryDTO,HttpStatus.CREATED);
     }
 
+    // Adding Category In Bulk
     @RequestMapping(value = "/public/bulk", method = RequestMethod.POST)
-    public ResponseEntity<List<CategoryDTO>> createBulkCategory(
+    public ResponseEntity<String> createBulkCategory(
             @Valid @RequestBody List<CategoryDTO> categoryDTOList) {
 
-        List<CategoryDTO> savedCategoryDTO = categoryService.createBulkCategories(categoryDTOList);
-        return new ResponseEntity<>(savedCategoryDTO, HttpStatus.CREATED);
+        categoryService.createBulkCategories(categoryDTOList);
+        return new ResponseEntity<>("All the categories have been added", HttpStatus.CREATED);
     }
 
-    //Getting CategoryById
 
+    //Getting CategoryById
     @GetMapping("/public/categories/{categoryId}")
     public ResponseEntity<CategoryDTO> searchById(@PathVariable Long categoryId){
         CategoryDTO category = categoryService.searchCategoryById(categoryId);
@@ -63,26 +64,20 @@ public class CategoryController {
     }
 
     //Updating Category By Id
-
     @PutMapping("/admin/categories/{categoryId}")
     public ResponseEntity<CategoryDTO> updateCategory(@RequestBody CategoryDTO categoryDTO, @PathVariable Long categoryId) {
         CategoryDTO savedCategoryDTO = categoryService.updateCatgory(categoryDTO, categoryId);
         return new ResponseEntity<>(savedCategoryDTO, HttpStatus.OK);
     }
-    @PostMapping("/bulk")
-    public List<CategoryDTO> createCategories(@RequestBody List<CategoryDTO> dtos) {
-        return dtos.stream()
-                .map(categoryService::createCategory)
-                .toList();
-    }
+
 
 
      //Delete All Category
     @DeleteMapping("/deleteAll")
-    public  List<CategoryDTO> deleteEveryCategory(){
-        List<CategoryDTO> deleteAllCategory = categoryService.deleteAllCategory();
+    public  ResponseEntity<String> deleteEveryCategory(){
+          categoryService.deleteAllCategory();
 
-        return deleteAllCategory;
+        return new ResponseEntity<>("All the categories has been deleted" , HttpStatus.OK);
 
     }
 

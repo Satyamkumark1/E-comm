@@ -15,49 +15,55 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
-    //    private List<Category> categories = new ArrayList<>();
+
 
     @Autowired
     private CategoryRepositry categoryRepositry;
 
     @Autowired
-
     private ModelMapper modelMapper;
 
 
-//
+     // Getting Categries  using Sorting with Pageable
     @Override
     public CategoryResponse getAllCategories(Integer pageNumber, Integer pageSize,String sortBy,String sortOrder) {
+        // Determine sorting direction based on sortOrder parameter
+        // If "asc" → ascending, otherwise descending
         Sort sort = sortOrder.equalsIgnoreCase("asc")
                 ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
 
-
+        // Create Pageable object with page number, size, and sorting details
         Pageable pageableDetails = PageRequest.of(pageNumber,pageSize,sort);
+
+        // Create Pageable object with page number, size, and sorting details
         Page<Category> categoryPage= categoryRepositry.findAll(pageableDetails);
 
+        // Extract the actual list of categories from the page
         List<Category>  categories = categoryPage.getContent();
+
+        // If there are no categories found, throw a custom exception
         if (categories.isEmpty()){
             throw new ApiException("No category created till now");
         }
         //Mapping models
-        // Category -> CategoryDTO
+        // Category -> CategoryDTO object usinf ModelMapper
         List<CategoryDTO> categoryDTOList = categories.stream()
                 .map(category -> modelMapper.map(category, CategoryDTO.class))
                 .toList();
         // Creating Object of categoryResponse and then passing the  categoryDTOList .
         CategoryResponse categoryResponse = new CategoryResponse();
-        categoryResponse.setContent(categoryDTOList);
-        categoryResponse.setPageNumber(categoryPage.getNumber());
-        categoryResponse.setPageSize(categoryPage.getSize());
-        categoryResponse.setTotalPages((long) categoryPage.getTotalPages());
-        categoryResponse.setLastPage(categoryPage.isLast());
-        categoryResponse.setTotalElements(categoryPage.getTotalElements());
+
+        categoryResponse.setContent(categoryDTOList); ///List of categories
+        categoryResponse.setPageNumber(categoryPage.getNumber());  ///current page number
+        categoryResponse.setPageSize(categoryPage.getSize()); /// current page size
+        categoryResponse.setTotalPages((long) categoryPage.getTotalPages());  ///total  number of pages
+        categoryResponse.setLastPage(categoryPage.isLast()); ///last page
+        categoryResponse.setTotalElements(categoryPage.getTotalElements()); ///total elements
 
         return categoryResponse; //returning categoryResponse
     }
@@ -111,16 +117,18 @@ public class CategoryServiceImpl implements CategoryService {
     //Search BY Id
     @Override
     public CategoryDTO searchCategoryById(Long categoryId) {
+        // Finding the category By Id from the DB And Converting To DTO and returning or else throwing and exception .
         return categoryRepositry.findById(categoryId)
                 .map(category -> modelMapper.map(category, CategoryDTO.class))  
-                .orElseThrow(() -> new ResourceNotFoundException("Category","Category " ,categoryId));
+                .orElseThrow(() -> new ResourceNotFoundException("Category","Category " ,categoryId)); //  throwing ResourceNotFoundException that we made
     }
 
 
-    //Adding Bulk Category
+    // Creating categories in bulk
     @Override
-    public List<CategoryDTO> createBulkCategories(List<CategoryDTO> categoryDTOList) {
-        // Get all existing names
+    public void createBulkCategories(List<CategoryDTO> categoryDTOList) {
+
+        // Get existing category names
         List<String> existingNames = categoryRepositry.findAll()
                 .stream()
                 .map(Category::getCategoryName)
@@ -132,23 +140,15 @@ public class CategoryServiceImpl implements CategoryService {
                 .map(dto -> modelMapper.map(dto, Category.class))
                 .toList();
 
-        List<Category> savedCategories = categoryRepositry.saveAll(categoriesToSave);
-
-        return savedCategories.stream()
-                .map(cat -> modelMapper.map(cat, CategoryDTO.class))
-                .toList();
+        // Save them
+        categoryRepositry.saveAll(categoriesToSave);
     }
 
+
+    /// DELETING ALL CATEGORIES
     @Override
-    public List<CategoryDTO> deleteAllCategory() {
-        List<Category> categories = categoryRepositry.findAll();
-
-        List<CategoryDTO> deleted = categories.stream()
-                .map(c-> modelMapper.map(c, CategoryDTO.class))
-                .toList();
+    public void deleteAllCategory() {
         categoryRepositry.deleteAll();
-
-        return deleted;
 
     }
 
