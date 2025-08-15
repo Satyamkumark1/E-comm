@@ -1,6 +1,6 @@
 package com.ecommerce.project.controller;
 
-import com.ecommerce.project.model.Category;
+import com.ecommerce.project.config.AppConstant;
 import com.ecommerce.project.payload.CategoryDTO;
 import com.ecommerce.project.payload.CategoryResponse;
 import com.ecommerce.project.service.CategoryService;
@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
+
 
 
 import java.util.List;
@@ -21,17 +21,19 @@ public class CategoryController {
     @Autowired
     private CategoryService categoryService;
 
-    @GetMapping("/echo")
-    public ResponseEntity<String> echoMessage(@RequestParam(name = "message",defaultValue = "hello world") String message){
-        return new ResponseEntity<>("echoed message:" +message,HttpStatus.OK);
 
-    }
 
 
     //Getting all  categories
     @RequestMapping(value = "/public/categories", method = RequestMethod.GET)
-    public ResponseEntity<CategoryResponse> getAllCategories(){
-        com.ecommerce.project.payload.CategoryResponse categoryResponse = categoryService.getAllCategories();
+    public ResponseEntity<CategoryResponse> getAllCategories(
+            @RequestParam(name = "pageNumber", defaultValue = AppConstant.PAGE_NUMBER, required = false) Integer pageNumber,
+            @RequestParam(name = "pageSize", defaultValue = AppConstant.PAGE_SIZE, required = false) Integer pageSize,
+            @RequestParam(name = "sortBy", defaultValue = AppConstant.SORT_CATEGORIES_BY, required = false) String sortBy,
+            @RequestParam(name = "sortOrder", defaultValue = AppConstant.SORT_DIR, required = false) String sortOrder
+
+    ){
+        com.ecommerce.project.payload.CategoryResponse categoryResponse = categoryService.getAllCategories(pageNumber,pageSize,sortBy,sortOrder);
 
         return new ResponseEntity<>(categoryResponse, HttpStatus.OK);
     }
@@ -43,11 +45,19 @@ public class CategoryController {
         return new ResponseEntity<>(savedCategoryDTO,HttpStatus.CREATED);
     }
 
+    @RequestMapping(value = "/public/bulk", method = RequestMethod.POST)
+    public ResponseEntity<List<CategoryDTO>> createBulkCategory(
+            @Valid @RequestBody List<CategoryDTO> categoryDTOList) {
+
+        List<CategoryDTO> savedCategoryDTO = categoryService.createBulkCategories(categoryDTOList);
+        return new ResponseEntity<>(savedCategoryDTO, HttpStatus.CREATED);
+    }
+
     //Getting CategoryById
 
     @GetMapping("/public/categories/{categoryId}")
-    public ResponseEntity<Category> searchById(@PathVariable Long categoryId){
-        Category category = categoryService.searchCategoryById(categoryId);
+    public ResponseEntity<CategoryDTO> searchById(@PathVariable Long categoryId){
+        CategoryDTO category = categoryService.searchCategoryById(categoryId);
         return ResponseEntity.ok(category);
 
     }
@@ -66,6 +76,15 @@ public class CategoryController {
                 .toList();
     }
 
+
+     //Delete All Category
+    @DeleteMapping("/deleteAll")
+    public  List<CategoryDTO> deleteEveryCategory(){
+        List<CategoryDTO> deleteAllCategory = categoryService.deleteAllCategory();
+
+        return deleteAllCategory;
+
+    }
 
 
 
