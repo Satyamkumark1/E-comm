@@ -29,7 +29,7 @@ public class ProductServiceImp implements ProductService{
     public ProductDTO addProduct(Product product, Long categoryId) {
         Category category = categoryRepositry.findById(categoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("category","categoryId",categoryId));
-        product.setCategoryID(category);
+        product.setCategory(category);
 
         double specialPrice = product.getPrice() - ((product.getDiscount()* 0.01) * product.getPrice());
         product.setSpecialPrice(specialPrice);
@@ -60,7 +60,24 @@ public class ProductServiceImp implements ProductService{
         return modelMapper.map(product, ProductDTO.class);
     }
 
+    @Override
+    public ProductResponse searchByCategory(Long categoryId) {
+        Category category = categoryRepositry.findById(categoryId)
+                .orElseThrow(()
+                        -> new ResourceNotFoundException("category","categoryId",categoryId));
 
+         List<Product> products = productRepositery.findByCategoryOrderByPriceAsc(category);
+
+         List<ProductDTO> savedProduct = products.stream()
+                 .map(dto -> modelMapper.map(dto, ProductDTO.class))
+                 .toList();
+
+         ProductResponse productResponse = new ProductResponse();
+         productResponse.setContent(savedProduct);
+
+
+        return productResponse;
+    }
 
 
 }
