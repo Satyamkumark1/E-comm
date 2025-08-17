@@ -56,6 +56,12 @@ public class CategoryServiceImpl implements CategoryService {
                 .map(category -> modelMapper.map(category, CategoryDTO.class))
                 .toList();
         // Creating Object of categoryResponse and then passing the  categoryDTOList .
+        CategoryResponse categoryResponse = getCategoryResponse(categoryDTOList, categoryPage); ///total elements
+
+        return categoryResponse; //returning categoryResponse
+    }
+
+    private static CategoryResponse getCategoryResponse(List<CategoryDTO> categoryDTOList, Page<Category> categoryPage) {
         CategoryResponse categoryResponse = new CategoryResponse();
 
         categoryResponse.setContent(categoryDTOList); ///List of categories
@@ -63,9 +69,8 @@ public class CategoryServiceImpl implements CategoryService {
         categoryResponse.setPageSize(categoryPage.getSize()); /// current page size
         categoryResponse.setTotalPages((long) categoryPage.getTotalPages());  ///total  number of pages
         categoryResponse.setLastPage(categoryPage.isLast()); ///last page
-        categoryResponse.setTotalElements(categoryPage.getTotalElements()); ///total elements
-
-        return categoryResponse; //returning categoryResponse
+        categoryResponse.setTotalElements(categoryPage.getTotalElements());
+        return categoryResponse;
     }
 
     @Override
@@ -86,7 +91,7 @@ public class CategoryServiceImpl implements CategoryService {
         return modelMapper.map(savedCategory, CategoryDTO.class);
     }
 
- //Delete Category by Id
+ //Delete Category by id
     @Override
     public CategoryDTO deleteCategory(Long categoryId) {
         //Finding the CategoryById
@@ -102,7 +107,7 @@ public class CategoryServiceImpl implements CategoryService {
     //Update Category By Id
     @Override
     public CategoryDTO updateCatgory(CategoryDTO categoryDTO, Long categoryId) {
-        //Finding the category by Id.
+        //Finding the category by id.
         Category savedCategory = categoryRepositry.findById(categoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Category","categoryId",categoryId)); // returning self made exception
         //Mapping categoryDTO -> category
