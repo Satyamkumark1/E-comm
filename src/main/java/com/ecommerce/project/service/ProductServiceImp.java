@@ -28,9 +28,11 @@ public class ProductServiceImp implements ProductService{
 
     //Adding product
     @Override
-    public ProductDTO addProduct(Product product, Long categoryId) {
+    public ProductDTO addProduct(ProductDTO productDTO, Long categoryId) {
         Category category = categoryRepositry.findById(categoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("category","categoryId",categoryId));
+        Product product = modelMapper.map(productDTO, Product.class);
+
         product.setCategory(category);
 
         double specialPrice = product.getPrice() - ((product.getDiscount()* 0.01) * product.getPrice());
@@ -103,10 +105,12 @@ public class ProductServiceImp implements ProductService{
 
     // Updating product by id.
     @Override
-    public ProductDTO updateProductById(Long productId, Product product) {
+    public ProductDTO updateProductById(Long productId, ProductDTO productDTO) {
         // Getting the Product from th DB.
          Product productFromDb = productRepositery.findById(productId)
                  .orElseThrow(()-> new ResourceNotFoundException("product","productId",productId));
+
+         Product product = modelMapper.map(productDTO, Product.class);
 
          //Setting Updated Values
          productFromDb.setProductName(product.getProductName());
