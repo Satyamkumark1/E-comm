@@ -10,4 +10,7 @@ import java.util.List;
 @Repository
 public interface ProductRepositery extends JpaRepository<Product,Long> {
     List<Product> findByCategoryOrderByPriceAsc(Category category);
+
+    List<Product> findByProductNameContainingIgnoreCase(String keyword);
+
 }

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 
+
 @Service
 public class ProductServiceImp implements ProductService{
 
@@ -25,6 +26,7 @@ public class ProductServiceImp implements ProductService{
     private ModelMapper modelMapper;
 
 
+    //Adding product
     @Override
     public ProductDTO addProduct(Product product, Long categoryId) {
         Category category = categoryRepositry.findById(categoryId)
@@ -39,6 +41,7 @@ public class ProductServiceImp implements ProductService{
         return modelMapper.map(savedProduct, ProductDTO.class) ;
     }
 
+    //Getting all product
     @Override
     public ProductResponse getAllProduct() {
 
@@ -52,6 +55,7 @@ public class ProductServiceImp implements ProductService{
         return response;
     }
 
+    //Getting product by productId
     @Override
     public ProductDTO getProductById(Long productId) {
         Product product = productRepositery.findById(productId)
@@ -60,6 +64,7 @@ public class ProductServiceImp implements ProductService{
         return modelMapper.map(product, ProductDTO.class);
     }
 
+    // Searching  product by categoryId
     @Override
     public ProductResponse searchByCategory(Long categoryId) {
         Category category = categoryRepositry.findById(categoryId)
@@ -77,6 +82,58 @@ public class ProductServiceImp implements ProductService{
 
 
         return productResponse;
+    }
+
+
+    //Searching product by keyword
+    @Override
+    public ProductResponse searchProductByKeyword(String keyword) {
+
+        List<Product> products = productRepositery.findByProductNameContainingIgnoreCase(keyword);
+
+        List<ProductDTO> productDTO = products.stream()
+                .map(product -> modelMapper.map(product, ProductDTO.class))
+                .toList();
+
+        ProductResponse productResponse = new ProductResponse();
+        productResponse.setContent(productDTO);
+
+        return productResponse;
+    }
+
+    // Updating product by id.
+    @Override
+    public ProductDTO updateProductById(Long productId, Product product) {
+        // Getting the Product from th DB.
+         Product productFromDb = productRepositery.findById(productId)
+                 .orElseThrow(()-> new ResourceNotFoundException("product","productId",productId));
+
+         //Setting Updated Values
+         productFromDb.setProductName(product.getProductName());
+         productFromDb.setPrice(product.getPrice());
+         productFromDb.setDescription(product.getDescription());
+         productFromDb.setDiscount(product.getDiscount());
+         productFromDb.setImage(product.getImage());
+         productFromDb.setQuantity(product.getQuantity());
+         productFromDb.setSpecialPrice(product.getSpecialPrice());
+
+         // Saving the updated value
+        Product savedProduct = productRepositery.save(productFromDb);
+        //returning saved product by mapping to Product Dto
+        return modelMapper.map(savedProduct,ProductDTO.class);
+    }
+
+
+    //Deleting product By id
+    @Override
+    public ProductDTO deleteProductById(Long productId) {
+        // Getting the Product from th DB.
+        Product productFromDb = productRepositery.findById(productId)
+                .orElseThrow(()-> new ResourceNotFoundException("product","productId",productId));
+      productRepositery.delete(productFromDb);
+
+        //returning saved product by mapping to Product Dto
+        return modelMapper.map(productFromDb,ProductDTO.class);
     }
 
 
