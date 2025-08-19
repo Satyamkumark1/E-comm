@@ -1,5 +1,6 @@
 package com.ecommerce.project.service;
 
+import com.ecommerce.project.exception.ApiException;
 import com.ecommerce.project.exception.ResourceNotFoundException;
 import com.ecommerce.project.model.Category;
 import com.ecommerce.project.model.Product;
@@ -34,6 +35,14 @@ public class ProductServiceImp implements ProductService{
     //Adding product
     @Override
     public ProductDTO addProduct(ProductDTO productDTO, Long categoryId) {
+        Product product1 = modelMapper.map(productDTO, Product.class);
+
+      Product productFromDb=  productRepositery.findProductByProductName(product1.getProductName());
+      if (productFromDb !=null){
+          throw  new ApiException("product name " + product1.getProductName() + " already exist");
+      }
+
+
         Category category = categoryRepositry.findById(categoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("category","categoryId",categoryId));
         Product product = modelMapper.map(productDTO, Product.class);
@@ -43,6 +52,7 @@ public class ProductServiceImp implements ProductService{
         double specialPrice = product.getPrice() - ((product.getDiscount()* 0.01) * product.getPrice());
         product.setSpecialPrice(specialPrice);
         product.setImage("Default");
+        product.setProductName(product.getProductName());
         Product savedProduct =  productRepositery.save(product);
 
         return modelMapper.map(savedProduct, ProductDTO.class) ;
@@ -51,12 +61,16 @@ public class ProductServiceImp implements ProductService{
     //Getting all product
     @Override
     public ProductResponse getAllProduct() {
+        //check product size is 0.
 
         List<Product> product = productRepositery.findAll();
 
         List<ProductDTO> productDTOS = product.stream()
                 .map(dto-> modelMapper.map(dto, ProductDTO.class))
                 .toList();
+        if (product.isEmpty()){
+            throw  new ApiException("No Products Exist");
+        }
         ProductResponse response = new ProductResponse();
         response.setContent(productDTOS);
         return response;
