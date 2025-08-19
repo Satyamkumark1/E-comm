@@ -1,8 +1,8 @@
 package com.ecommerce.project.service;
 
-import com.ecommerce.project.model.Product;
 import com.ecommerce.project.payload.ProductDTO;
 import com.ecommerce.project.payload.ProductResponse;
+import jakarta.validation.Valid;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -12,7 +12,7 @@ public interface ProductService {
     ProductDTO addProduct(ProductDTO productDTO, Long categoryId);
 
 
-   ProductResponse  getAllProduct();
+   ProductResponse  getAllProduct(Integer pageNumber,Integer pageSize,String sortBy,String sortOrder);
 
 
     ProductDTO getProductById(Long productId);
@@ -29,4 +29,7 @@ public interface ProductService {
 
 
     ProductDTO updateProductImageByProductId(Long productId, MultipartFile im) throws IOException;
+
+
+    ProductResponse createBulkProducts(Long categoryId, @Valid List<ProductDTO> productDTOS);
 }

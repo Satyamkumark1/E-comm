@@ -1,6 +1,8 @@
 package com.ecommerce.project.controller;
 
+import com.ecommerce.project.config.AppConstant;
 import com.ecommerce.project.model.Product;
+import com.ecommerce.project.payload.CategoryDTO;
 import com.ecommerce.project.payload.ProductDTO;
 import com.ecommerce.project.payload.ProductResponse;
 import com.ecommerce.project.service.ProductService;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 
 @RestController
@@ -21,6 +24,17 @@ public class ProductController {
     @Autowired
      private ProductService productService;
 
+
+    //Adding bulk Products with CategoryId
+    @PostMapping("/admin/category/{categoryId}/products")
+    public  ResponseEntity<ProductResponse> createBulkCategory(@Valid
+                                                      @RequestBody List<ProductDTO> productDTOS,
+                                                      @PathVariable Long categoryId
+    ){
+       ProductResponse productResponse =  productService.createBulkProducts(categoryId,productDTOS);
+        return new ResponseEntity<>(productResponse,HttpStatus.OK);
+
+    }
 
     // Adding Products with CategoryId
     @PostMapping("/admin/categories/{categoryId}/products")
@@ -34,9 +48,15 @@ public class ProductController {
 
     // Get All  Products
     @GetMapping("/admin/categories/products")
-    public ResponseEntity<ProductResponse> getAllProducts(){
+    public ResponseEntity<ProductResponse> getAllProducts(
+            @RequestParam(name = "pageNumber", defaultValue = AppConstant.PAGE_NUMBER, required = false) Integer pageNumber,
+            @RequestParam(name = "pageSize", defaultValue = AppConstant.PAGE_SIZE, required = false) Integer pageSize,
+            @RequestParam(name = "sortBy", defaultValue = AppConstant.SORT_PRODUCTS_BY, required = false) String sortBy,
+            @RequestParam(name = "sortOrder", defaultValue = AppConstant.SORT_DIR, required = false) String sortOrder
 
-       com.ecommerce.project.payload.ProductResponse productResponse = productService.getAllProduct();
+    ){
+
+       com.ecommerce.project.payload.ProductResponse productResponse = productService.getAllProduct(pageNumber,pageSize,sortBy,sortOrder);
         return new ResponseEntity<>(productResponse, HttpStatus.OK);
 
     }

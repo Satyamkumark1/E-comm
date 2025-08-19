@@ -10,6 +10,10 @@ import com.ecommerce.project.repositery.CategoryRepositry;
 import com.ecommerce.project.repositery.ProductRepositery;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -58,23 +62,36 @@ public class ProductServiceImp implements ProductService{
         return modelMapper.map(savedProduct, ProductDTO.class) ;
     }
 
-    //Getting all product
     @Override
-    public ProductResponse getAllProduct() {
-        //check product size is 0.
+    public ProductResponse getAllProduct(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+        Sort sort = sortOrder.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
 
-        List<Product> product = productRepositery.findAll();
+        Pageable pageableDetails = PageRequest.of(pageNumber, pageSize, sort);
+        Page<Product> productsPage = productRepositery.findAll(pageableDetails);
+
+        List<Product> product = productsPage.getContent();
+
+        if (product.isEmpty()) {
+            throw new ApiException("No Products Exist");
+        }
 
         List<ProductDTO> productDTOS = product.stream()
-                .map(dto-> modelMapper.map(dto, ProductDTO.class))
+                .map(dto -> modelMapper.map(dto, ProductDTO.class))
                 .toList();
-        if (product.isEmpty()){
-            throw  new ApiException("No Products Exist");
-        }
+
         ProductResponse response = new ProductResponse();
         response.setContent(productDTOS);
+        response.setPageNumber(productsPage.getNumber());
+        response.setPageSize(productsPage.getSize());
+        response.setTotalElements(productsPage.getTotalElements());
+        response.setTotalPages(productsPage.getTotalPages());
+        response.setLastPage(productsPage.isLast());
+
         return response;
     }
+
 
     //Getting product by productId
     @Override
@@ -176,6 +193,47 @@ public class ProductServiceImp implements ProductService{
 
         return modelMapper.map(savedProduct, ProductDTO.class);
     }
+
+    /**
+     * Creating Bulk Products By category Id
+     */
+
+    @Override
+    public ProductResponse createBulkProducts(Long categoryId, List<ProductDTO> productDTOS) {
+        // 1. Get Category
+        Category category = categoryRepositry.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        // 2. Get existing names (optimize this with custom query if needed)
+        List<String> existingNames = productRepositery.findAll()
+                .stream()
+                .map(Product::getProductName)
+                .toList();
+
+        // 3. Filter and map
+        List<Product> productsToSave = productDTOS.stream()
+                .filter(dto -> !existingNames.contains(dto.getProductName()))
+                .map(dto -> {
+                    Product product = modelMapper.map(dto, Product.class);
+                    product.setCategory(category); // 🔑 link category
+                    return product;
+                })
+                .toList();
+
+        // 4. Save all
+        List<Product> savedProducts = productRepositery.saveAll(productsToSave);
+
+        // 5. Convert back to DTOs
+        List<ProductDTO> savedProductDTOs = savedProducts.stream()
+                .map(p -> modelMapper.map(p, ProductDTO.class))
+                .toList();
+
+        // 6. Wrap in response
+        ProductResponse productResponse = new ProductResponse();
+        productResponse.setContent(savedProductDTOs);
+        return productResponse;
+    }
+
 
     private String uploadImage(String path, MultipartFile file) throws IOException {
         // File names of current / original file
