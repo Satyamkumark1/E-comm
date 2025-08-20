@@ -62,6 +62,7 @@ public class ProductServiceImp implements ProductService{
         return modelMapper.map(savedProduct, ProductDTO.class) ;
     }
 
+    //Get All products
     @Override
     public ProductResponse getAllProduct(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
         Sort sort = sortOrder.equalsIgnoreCase("asc")
@@ -95,7 +96,13 @@ public class ProductServiceImp implements ProductService{
 
     //Getting product by productId
     @Override
-    public ProductDTO getProductById(Long productId) {
+    public ProductDTO getProductById(Long productId, Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+        Sort sort = sortOrder.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+        Pageable pageableDetails = PageRequest.of(pageNumber,pageSize,sort);
+        Page<Product> productsPage = productRepositery.findAll(pageableDetails);
+
         Product product = productRepositery.findById(productId)
                 .orElseThrow(()-> new ResourceNotFoundException("product","productId",productId));
 
@@ -104,12 +111,18 @@ public class ProductServiceImp implements ProductService{
 
     // Searching  product by categoryId
     @Override
-    public ProductResponse searchByCategory(Long categoryId) {
+    public ProductResponse searchByCategory(Long categoryId, Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
         Category category = categoryRepositry.findById(categoryId)
                 .orElseThrow(()
                         -> new ResourceNotFoundException("category","categoryId",categoryId));
 
-         List<Product> products = productRepositery.findByCategoryOrderByPriceAsc(category);
+        Sort sort = sortOrder.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+        Pageable pageableDetails = PageRequest.of(pageNumber,pageSize,sort);
+        Page<Product> productsPage = productRepositery.findByCategoryOrderByPriceAsc(category,pageableDetails);
+
+         List<Product> products = productsPage.getContent();
 
          List<ProductDTO> savedProduct = products.stream()
                  .map(dto -> modelMapper.map(dto, ProductDTO.class))
@@ -117,7 +130,10 @@ public class ProductServiceImp implements ProductService{
 
          ProductResponse productResponse = new ProductResponse();
          productResponse.setContent(savedProduct);
-
+         productResponse.setPageNumber(productsPage.getNumber());
+         productResponse.setTotalElements(productsPage.getTotalElements());
+         productResponse.setTotalPages(productsPage.getTotalPages());
+         productResponse.setLastPage(productsPage.isLast());
 
         return productResponse;
     }
@@ -125,16 +141,26 @@ public class ProductServiceImp implements ProductService{
 
     //Searching product by keyword
     @Override
-    public ProductResponse searchProductByKeyword(String keyword) {
+    public ProductResponse searchProductByKeyword(String keyword, Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
 
-        List<Product> products = productRepositery.findByProductNameContainingIgnoreCase(keyword);
+        Sort sort = sortOrder.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(pageNumber,pageSize,sort);
 
-        List<ProductDTO> productDTO = products.stream()
+        Page<Product>  pageProducts = productRepositery.findByProductNameContainingIgnoreCase(keyword,pageable);
+
+        List<ProductDTO> productDTO = pageProducts.getContent().stream()
                 .map(product -> modelMapper.map(product, ProductDTO.class))
                 .toList();
 
         ProductResponse productResponse = new ProductResponse();
         productResponse.setContent(productDTO);
+        productResponse.setPageSize(pageProducts.getSize());
+        productResponse.setLastPage(pageProducts.isLast());
+        productResponse.setPageNumber(pageProducts.getNumber());
+        productResponse.setTotalElements(pageProducts.getTotalElements());
+        productResponse.setTotalPages(pageProducts.getTotalPages());
 
         return productResponse;
     }
@@ -195,7 +221,7 @@ public class ProductServiceImp implements ProductService{
     }
 
     /**
-     * Creating Bulk Products By category Id
+     * Creating Bulk Products By category id
      */
 
     @Override

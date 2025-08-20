@@ -15,12 +15,12 @@ public interface ProductService {
    ProductResponse  getAllProduct(Integer pageNumber,Integer pageSize,String sortBy,String sortOrder);
 
 
-    ProductDTO getProductById(Long productId);
+    ProductDTO getProductById(Long productId, Integer pageNumber, Integer pageSize, String sortBy, String sortOrder);
 
-    ProductResponse searchByCategory(Long categoryId);
+    ProductResponse searchByCategory(Long categoryId, Integer pageNumber, Integer pageSize, String sortBy, String sortOrder);
 
 
-    ProductResponse searchProductByKeyword(String keyword);
+    ProductResponse searchProductByKeyword(String keyword, Integer pageNumber, Integer pageSize, String sortBy, String sortOrder);
 
 
     ProductDTO updateProductById(Long productId, ProductDTO productDTO);
