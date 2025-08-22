@@ -5,12 +5,16 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-import lombok.Data;
+import lombok.*;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "users",
         uniqueConstraints = {
@@ -47,5 +51,20 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 
+    @ToString.Exclude
+    @OneToMany(mappedBy = "user",cascade = {CascadeType.MERGE,CascadeType.PERSIST},
+            orphanRemoval = true
+    )
+    private Set<Product> products;
+
+
+    @Getter
+    @Setter
+    @ManyToMany(cascade = {CascadeType.ALL,CascadeType.PERSIST})
+    @JoinTable(name = "user_address",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "address_id")
+    )
+    private List<Address> addresses = new ArrayList<>();
 
 }
