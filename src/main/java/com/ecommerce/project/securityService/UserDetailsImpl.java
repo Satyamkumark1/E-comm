@@ -50,7 +50,7 @@ public class UserDetailsImpl implements UserDetails {
                 user.getUserId(),
                 user.getUserName(),
                 user.getEmail(),
-                user.getPassword(),     // ✅ use hashed password from DB
+                user.getPassword(),
                 authorities
         );
     }
