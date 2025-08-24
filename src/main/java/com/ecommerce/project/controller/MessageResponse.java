@@ -3,11 +3,11 @@ package com.ecommerce.project.controller;
 import lombok.Getter;
 import lombok.Setter;
 
-public class MessageNotFound {
+public class MessageResponse {
     @Getter
     @Setter
     private String message;
 
-    public MessageNotFound(String s) {
+    public MessageResponse(String s) {
     }
 }

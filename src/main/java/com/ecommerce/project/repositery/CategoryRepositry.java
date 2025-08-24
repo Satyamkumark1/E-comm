@@ -1,13 +1,11 @@
 package com.ecommerce.project.repositery;
 
 import com.ecommerce.project.model.Category;
-import com.ecommerce.project.model.Product;
+import com.ecommerce.project.model.Role;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
 
 @Repository
 public interface CategoryRepositry extends JpaRepository<Category , Long> {

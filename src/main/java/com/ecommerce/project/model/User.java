@@ -67,4 +67,6 @@ public class User {
     )
     private List<Address> addresses = new ArrayList<>();
 
+    public User(@NotBlank @Size(min = 5,max = 30) String userName, @NotBlank @Size(max = 40) @Email String email, String encode) {
+    }
 }
