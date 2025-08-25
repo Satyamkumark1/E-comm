@@ -31,7 +31,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 public class AuthController {
     @Autowired
     private  AuthenticationManager authenticationManager;
@@ -78,8 +78,8 @@ public class AuthController {
         if (strRoles == null) {
             // Default role = USER
             Role userRole = roleRepository.findByRoleName(AppRole.ROLE_USER)
-                    .orElseThrow(() -> new RuntimeException("Error: Role USER not found."));
-            roles.add(userRole);
+                    .orElseGet(() -> roleRepository.save(new Role(AppRole.ROLE_USER)));
+
         } else {
             strRoles.forEach(role -> {
                 if (role.toLowerCase().equals("admin")) {
@@ -104,12 +104,14 @@ public class AuthController {
 
     @PostMapping("/signing")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest){
+
         Authentication authentication;
         try {
             authentication = authenticationManager
                     .authenticate(new UsernamePasswordAuthenticationToken(
-                            loginRequest.getPassword(),
-                            loginRequest.getUsername()
+                            loginRequest.getUserName(),
+                            loginRequest.getPassword()
+
                     ));
         } catch (AuthenticationException e){
             Map<String,Object> map = new HashMap<>();

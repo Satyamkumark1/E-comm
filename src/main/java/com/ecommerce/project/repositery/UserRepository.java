@@ -7,11 +7,18 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 
+import java.util.Optional;
+
 
 @Repository
 public interface UserRepository extends JpaRepository<User,Long> {
 
-    boolean existsByUserName(@NotBlank @Size(min = 5,max = 30) String userName);
+
 
     boolean existsByEmail(@NotBlank @Size(min = 5,max = 30) String userName);
+
+
+Optional<User> findByUserName(String username);
+
+    boolean existsByUserName(@NotBlank @Size(min = 5,max = 30) String userName);
 }
