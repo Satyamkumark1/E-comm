@@ -33,20 +33,27 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         logger.debug("AuthTokenFilter called for URI: {}", request.getRequestURI());
         try {
             String jwt = parseJwt(request);
+            logger.debug("Parsed JWT: {}", jwt);
             if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
+                logger.debug("JWT is valid, extracting username");
                 String username = jwtUtils.getUserNameFromJwtToken(jwt);
+                logger.debug("Extracted username: {}", username);
 
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                logger.debug("Loaded user details: {}", userDetails.getUsername());
 
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(userDetails,
                                 null,
                                 userDetails.getAuthorities());
-                logger.debug("Roles from JWT: {}", userDetails.getAuthorities());
+                logger.debug("Created authentication token with roles: {}", userDetails.getAuthorities());
 
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+                logger.debug("Set authentication in SecurityContext");
+            } else {
+                logger.debug("JWT is null or invalid. JWT: {}, Valid: {}", jwt, jwt != null ? jwtUtils.validateJwtToken(jwt) : false);
             }
         } catch (Exception e) {
             logger.error("Cannot set user authentication: {}", e);
@@ -58,6 +65,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     private String parseJwt(HttpServletRequest request) {
         String jwt = jwtUtils.getJwtFromHeader(request);
         logger.debug("AuthTokenFilter.java: {}", jwt);
+        logger.debug("Request URI: {}", request.getRequestURI());
+        logger.debug("Authorization header: {}", request.getHeader("Authorization"));
         return jwt;
     }
 }

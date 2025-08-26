@@ -22,10 +22,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -136,4 +133,37 @@ public class AuthController {
 
 
     }
+    @GetMapping("/userName")
+    public String userName(Authentication authentication){
+        System.out.println("Authentication object: " + authentication);
+        if (authentication!= null){
+            System.out.println("Authentication name: " + authentication.getName());
+            return authentication.getName();
+        } else {
+            System.out.println("Authentication is null");
+            return "null";
+        }
+
+    }
+
+    @GetMapping("/user")
+    public ResponseEntity<UserInfoResponse> userDetails(Authentication authentication) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        List<String > roles = userDetails.getAuthorities().stream()
+                .map(item -> item.getAuthority())
+                .collect(Collectors.toList());
+
+        UserInfoResponse response = new UserInfoResponse(
+                userDetails.getId(),
+                userDetails.getUsername(),
+                roles);
+
+        return ResponseEntity.ok(response);
+
+    }
+
+
+
+
+
 }

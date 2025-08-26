@@ -29,6 +29,9 @@ public class JwtUtils {
         logger.debug("Authorization Header: {}", bearerToken);
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7); // Remove Bearer prefix
+        } else if (bearerToken != null && !bearerToken.startsWith("Bearer ")) {
+            // Handle case where token is sent without "Bearer " prefix
+            return bearerToken;
         }
         return null;
     }
@@ -44,10 +47,18 @@ public class JwtUtils {
     }
 
     public String getUserNameFromJwtToken(String token) {
-        return Jwts.parser()
-                .verifyWith((SecretKey) key())
-                .build().parseSignedClaims(token)
-                .getPayload().getSubject();
+        try {
+            logger.debug("Extracting username from JWT token: {}", token);
+            String username = Jwts.parser()
+                    .verifyWith((SecretKey) key())
+                    .build().parseSignedClaims(token)
+                    .getPayload().getSubject();
+            logger.debug("Extracted username: {}", username);
+            return username;
+        } catch (Exception e) {
+            logger.error("Error extracting username from JWT: {}", e.getMessage());
+            throw e;
+        }
     }
 
     private Key key() {
@@ -56,8 +67,9 @@ public class JwtUtils {
 
     public boolean validateJwtToken(String authToken) {
         try {
-            System.out.println("Validate");
+            logger.debug("Validating JWT token: {}", authToken);
             Jwts.parser().verifyWith((SecretKey) key()).build().parseSignedClaims(authToken);
+            logger.debug("JWT token is valid");
             return true;
         } catch (MalformedJwtException e) {
             logger.error("Invalid JWT token: {}", e.getMessage());
@@ -68,6 +80,7 @@ public class JwtUtils {
         } catch (IllegalArgumentException e) {
             logger.error("JWT claims string is empty: {}", e.getMessage());
         }
+        logger.debug("JWT token validation failed");
         return false;
     }
 }
