@@ -8,6 +8,7 @@ public class MessageResponse {
     @Setter
     private String message;
 
-    public MessageResponse(String s) {
+    public MessageResponse(String message) {
+        this.message = message;
     }
 }
