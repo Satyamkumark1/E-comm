@@ -1,4 +1,4 @@
-package com.ecommerce.project.controller;
+package com.ecommerce.project.config;
 
 import lombok.Getter;
 import lombok.Setter;
