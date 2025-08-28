@@ -1,6 +1,7 @@
 package com.ecommerce.project.controller;
 
-import com.ecommerce.project.jwt.JwtUtils;
+import com.ecommerce.project.config.MessageResponse;
+import com.ecommerce.project.security.jwt.JwtUtils;
 import com.ecommerce.project.model.AppRole;
 import com.ecommerce.project.model.Role;
 import com.ecommerce.project.model.User;
@@ -12,9 +13,7 @@ import com.ecommerce.project.security.response.UserInfoResponse;
 import com.ecommerce.project.securityService.UserDetailsImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -126,12 +125,15 @@ public class AuthController {
                 .collect(Collectors.toList());
 
         UserInfoResponse response = new UserInfoResponse(
-                userDetails.getId(),
                 userDetails.getUsername(),
+                roles,
+                jwtCookie.toString(),
+                userDetails.getId()
+                );
 
-                roles);
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE,
+                jwtCookie.toString()
+                ).body(response);
 
 
     }

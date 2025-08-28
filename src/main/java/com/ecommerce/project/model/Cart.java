@@ -28,4 +28,7 @@ public class Cart {
 
     private Double totalPrice = 0.0;
 
+    public Long getId() {
+        return id;
+    }
 }

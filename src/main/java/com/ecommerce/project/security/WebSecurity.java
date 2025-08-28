@@ -1,8 +1,8 @@
 package com.ecommerce.project.security;
-import com.ecommerce.project.jwt.AuthEntryPointJwt;
-import com.ecommerce.project.jwt.AuthTokenFilter;
+import com.ecommerce.project.security.jwt.AuthEntryPointJwt;
+import com.ecommerce.project.security.jwt.AuthTokenFilter;
 
-import com.ecommerce.project.jwt.JwtUtils;
+import com.ecommerce.project.security.jwt.JwtUtils;
 import com.ecommerce.project.model.AppRole;
 import com.ecommerce.project.model.Role;
 import com.ecommerce.project.model.User;
@@ -26,6 +26,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Set;
 
@@ -77,6 +80,7 @@ public class WebSecurity {
     // Defining rules and what url can be accessed
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception{ // Main security DSL (should also be @Bean).
         http.csrf(csrf -> csrf.disable())              // Disable CSRF (OK for stateless APIs using tokens).
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .exceptionHandling(exception ->        // Configure how exceptions are turned into HTTP responses.
                         exception.authenticationEntryPoint(unauthorizedHandler)) // Use your 401 entry point for auth failures.
                 .sessionManagement(
@@ -175,6 +179,23 @@ public class WebSecurity {
                 userRepository.save(admin);
             });
         };
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowCredentials(true);
+        configuration.addAllowedOriginPattern("http://localhost:*");
+        configuration.addAllowedHeader("*");
+        configuration.addAllowedMethod("GET");
+        configuration.addAllowedMethod("POST");
+        configuration.addAllowedMethod("PUT");
+        configuration.addAllowedMethod("DELETE");
+        configuration.addAllowedMethod("OPTIONS");
+        configuration.addExposedHeader("Set-Cookie");
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
 }
