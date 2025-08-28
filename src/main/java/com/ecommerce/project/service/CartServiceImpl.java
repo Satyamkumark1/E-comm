@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -109,6 +110,61 @@ public class CartServiceImpl implements CartService{
 
 
     }
+
+    @Override
+    public List<CartDTO> getAllCarts() {
+        List<Cart> carts = cartRepository.findAll();
+
+        if (carts.isEmpty()) {
+            throw new ApiException("Cart is empty");
+        }
+
+        return carts.stream()
+                .map(cart -> {
+                    // Map basic cart fields
+                    CartDTO cartDTO = modelMapper.map(cart, CartDTO.class);
+
+                    // Map products for each cart item
+                    List<ProductDTO> productDTOS = cart.getCartItems().stream()
+                            .map(item -> {
+                                ProductDTO dto = modelMapper.map(item.getProduct(), ProductDTO.class);
+                                dto.setQuantity(item.getQuantity()); // Set cart-specific quantity
+                                return dto; // Return each product DTO
+                            })
+                            .collect(Collectors.toList());
+
+                    cartDTO.setProduct(productDTOS);
+                    return cartDTO; // Return the complete CartDTO
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public CartDTO getUserCart(String email, Long cartId) {
+        Cart cart = cartRepository.findCartByEmailAndCartId(email, cartId);
+
+        CartDTO cartDTO = modelMapper.map(cart, CartDTO.class);
+
+        List<ProductDTO> productDTOS = cart.getCartItems().stream()
+                .map(item -> {
+                    Product product = item.getProduct();
+                    ProductDTO dto = new ProductDTO();
+                    dto.setId(product.getId());
+                    dto.setDescription(product.getDescription());
+                    dto.setDiscount(product.getDiscount());
+                    dto.setImage(product.getImage());
+                    dto.setPrice(product.getPrice());
+                    dto.setProductName(product.getProductName());
+                    dto.setSpecialPrice(product.getSpecialPrice());
+                    dto.setQuantity(item.getQuantity()); // <-- Use cart item quantity here
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
+        cartDTO.setProduct(productDTOS);
+        return cartDTO;
+    }
+
 
 
 }
