@@ -91,6 +91,7 @@ public class WebSecurity {
                 )
                 .authorizeHttpRequests(auth ->         // Authorization rules for endpoints.
                         auth.requestMatchers("/api/auth/**").permitAll()
+                                .requestMatchers("/api/carts/**").permitAll()
                                 .requestMatchers("/api/public/categories").permitAll()// Public: login/register/token refresh endpoints.
                                 .requestMatchers("/v3/api-docs/**").permitAll()
                                 .requestMatchers("/h2-console/**").permitAll()

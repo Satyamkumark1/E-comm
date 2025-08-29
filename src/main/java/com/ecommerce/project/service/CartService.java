@@ -3,6 +3,7 @@ package com.ecommerce.project.service;
 
 import com.ecommerce.project.model.Cart;
 import com.ecommerce.project.payload.CartDTO;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,4 +19,8 @@ public interface CartService {
 
 
     CartDTO getUserCart(String email, Long cartId);
+
+
+    @Transactional
+    CartDTO updateProductQuantityByProductId(Long productId, Integer quatity);
 }

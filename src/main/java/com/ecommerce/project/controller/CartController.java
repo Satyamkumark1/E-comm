@@ -5,9 +5,12 @@ import com.ecommerce.project.payload.CartDTO;
 import com.ecommerce.project.repositery.CartRepository;
 import com.ecommerce.project.service.CartService;
 import com.ecommerce.project.utils.AuthUtils;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,7 +35,7 @@ public class CartController {
         return new ResponseEntity<>(cartDTO, HttpStatus.CREATED);
     }
 
-    @GetMapping("/cart")
+    @GetMapping("/carts")
     public ResponseEntity<List<CartDTO>>  allCarts(){
         List<CartDTO> carts = cartService.getAllCarts();
         return new ResponseEntity<List<CartDTO>>(carts,HttpStatus.FOUND);
@@ -50,6 +53,20 @@ public class CartController {
         return  new ResponseEntity<>(cartDTO,HttpStatus.FOUND);
 
     }
+
+    @PutMapping("/carts/products/{productId}/{operation}")
+    public ResponseEntity<CartDTO> updateProductQuantity(
+            @PathVariable Long productId,
+            @PathVariable String operation
+    ){
+        CartDTO  cartDTO = cartService.updateProductQuantityByProductId(productId,
+                operation.equalsIgnoreCase("delete") ? -1 :1);
+
+        return new ResponseEntity<CartDTO>(cartDTO,HttpStatus.OK);
+
+    }
+
+
 
 
 

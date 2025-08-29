@@ -5,15 +5,19 @@ import com.ecommerce.project.exception.ResourceNotFoundException;
 import com.ecommerce.project.model.Cart;
 import com.ecommerce.project.model.CartItem;
 import com.ecommerce.project.model.Product;
+import com.ecommerce.project.model.User;
 import com.ecommerce.project.payload.CartDTO;
+import com.ecommerce.project.payload.CartItemDTO;
 import com.ecommerce.project.payload.ProductDTO;
 import com.ecommerce.project.payload.ProductResponse;
 import com.ecommerce.project.repositery.CartItemRepositery;
 import com.ecommerce.project.repositery.CartRepository;
 import com.ecommerce.project.repositery.ProductRepositery;
 import com.ecommerce.project.utils.AuthUtils;
+import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -165,6 +169,61 @@ public class CartServiceImpl implements CartService{
         return cartDTO;
     }
 
+    @Override
+    public CartDTO updateProductQuantityByProductId(Long productId, Integer quantity) {
+
+         String email = authUtil.loggedInEmail();
+         Cart userCart = cartRepository.findCartByEmail(email);
+         Long cartId =userCart.getId();
+
+        Cart cart = cartRepository.findById(cartId)
+                .orElseThrow(()-> new ResourceNotFoundException("cart", " cartId",cartId));
+
+        Product product = productRepositery.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("product","productId",productId));
+
+        if (product.getQuantity() == 0){
+            throw  new ApiException(product.getProductName() + "not exist");
+        }
+
+        if (product.getQuantity() < quantity) {
+            throw new ApiException("Please , make an order of the " + product.getProductName()+
+                    "less then or equal to the quantity" + product.getQuantity()+ ".");
+        }
+        // The repository method expects parameters in order: cartId, productId
+        CartItem cartItem = cartItemRepositery.findCartItemByProductIdAndCartId(cartId, productId);
+
+        if (cartItem == null){
+            throw  new ApiException(product.getProductName() + "not exist in the cart");
+        }
+        cartItem.setQuantity(cartItem.getQuantity() + quantity);
+        cartItem.setDiscount(product.getDiscount());
+        cartItem.setDiscount(product.getDiscount());
+        cart.setTotalPrice(cartItem.getProductPrice() + (product.getPrice() * quantity));
+        cartRepository.save(cart);
+         CartItem  updatedCartItem = cartItemRepositery.save(cartItem);
+         Long id = updatedCartItem.getCartItemId();
+
+        if (updatedCartItem.getQuantity() == 0){
+            cartItemRepositery.deleteById(id);
+        }
+
+        CartDTO cartDTO = modelMapper.map(cart,CartDTO.class);
+
+       List<CartItem> cartItems = cart.getCartItems();
+
+       Stream<ProductDTO> productDTOStream = cartItems.stream()
+               .map(item -> {
+                   ProductDTO productDTO = modelMapper.map(item.getProduct(),ProductDTO.class);
+                   productDTO.setQuantity(item.getQuantity());
+                   return productDTO;
+               });
+
+       cartDTO.setProduct(productDTOStream.toList());
+
+
+        return cartDTO;
+    }
 
 
 }
