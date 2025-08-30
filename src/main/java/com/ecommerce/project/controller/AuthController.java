@@ -100,7 +100,7 @@ public class AuthController {
 
 
 
-    @PostMapping("/signing")
+    @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest){
 
         Authentication authentication;
@@ -115,7 +115,7 @@ public class AuthController {
             Map<String,Object> map = new HashMap<>();
             map.put("message","Bad credential");
             map.put("status",false);
-            return  new ResponseEntity<Object>(map, HttpStatus.NOT_FOUND);
+            return  new ResponseEntity<Object>(map, HttpStatus.UNAUTHORIZED);
         }
         SecurityContextHolder.getContext().setAuthentication(authentication);
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
@@ -134,8 +134,12 @@ public class AuthController {
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE,
                 jwtCookie.toString()
                 ).body(response);
+    }
 
-
+    // Keep the old endpoint for backward compatibility
+    @PostMapping("/signing")
+    public ResponseEntity<?> authenticateUserOld(@RequestBody LoginRequest loginRequest){
+        return authenticateUser(loginRequest);
     }
     @GetMapping("/userName")
     public String userName(Authentication authentication){

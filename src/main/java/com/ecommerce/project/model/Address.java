@@ -21,33 +21,33 @@ public class Address {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long  addressId;
 
-    @NotBlank
-    @Size(min = 5, message = "Street name must be atleast 5 characters")
+    @NotBlank(message = "Street is required")
+    @Size(min = 5, message = "Street name must be at least 5 characters")
     private  String street;
 
-    @NotBlank
-    @Size(min = 4, message = "building name must be atleast 5 characters")
+    @NotBlank(message = "Building name is required")
+    @Size(min = 4, message = "Building name must be at least 4 characters")
     private String buildingName;
 
-    @NotBlank
-    @Size(min = 4, message = "City name must be atleast 5 characters")
+    @NotBlank(message = "City is required")
+    @Size(min = 4, message = "City name must be at least 4 characters")
     private String city;
 
-    @NotBlank
-    @Size(min = 4, message = "State name must be atleast 5 characters")
+    @NotBlank(message = "State is required")
+    @Size(min = 4, message = "State name must be at least 4 characters")
     private String state;
 
-    @NotBlank
-    @Size(min = 4, message = "country name must be atleast 5 characters")
+    @NotBlank(message = "Country is required")
+    @Size(min = 4, message = "Country name must be at least 4 characters")
     private String country;
 
-    @NotBlank
-    @Size(min = 4, message = "Pincode name must be atleast 5 characters")
+    @NotBlank(message = "Pincode is required")
+    @Size(min = 4, message = "Pincode must be at least 4 characters")
     private String pincode;
 
-    @ToString.Exclude
-    @ManyToMany(mappedBy = "addresses")
-    private List<User> user = new ArrayList<>();
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
     public Address(Long addressId,
                    String street,
