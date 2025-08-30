@@ -9,10 +9,10 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.parameters.P;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -24,19 +24,44 @@ public class AddressController {
     @Autowired
     private AuthUtils authUtils;
 
-    /**
-     * Create a new address for the authenticated user.
-     * 
-     * IMPORTANT: This endpoint requires authentication.
-     * You must include a valid JWT token in the Authorization header:
-     * Authorization: Bearer <your-jwt-token>
-     * 
-     * To get a JWT token, first authenticate via /api/auth/signin
-     */
+
     @PostMapping("/address")
     public ResponseEntity<AddressDTO> createAddress(@Valid @RequestBody AddressDTO addressDTO){
         User user = authUtils.loggedInUser();
         AddressDTO savedAddressDTO = addressServices.createAddress(addressDTO, user);
-        return new ResponseEntity<>(savedAddressDTO, HttpStatus.CREATED);
+        return new ResponseEntity<AddressDTO>(savedAddressDTO, HttpStatus.CREATED);
     }
+
+    @GetMapping("/allAddresses")
+    public ResponseEntity<List<AddressDTO>> getAllTheAddress(){
+        List<AddressDTO> addressDTOS = addressServices.getAddress();
+        return  new ResponseEntity<List<AddressDTO>>(addressDTOS,HttpStatus.FOUND);
+
+    }
+
+    @GetMapping("users/address")
+    public ResponseEntity<List<AddressDTO>> getAddressbyUser(){
+        User user = authUtils.loggedInUser();
+       List<AddressDTO> addressDTOS = addressServices.getAddressbyUser(user);
+        return  new ResponseEntity<List<AddressDTO>>(addressDTOS,HttpStatus.FOUND);
+
+    }
+
+    @PutMapping("/address/{addressId}")
+    public ResponseEntity<AddressDTO> updateAddress(  @Valid @PathVariable Long addressId,
+                                                    @RequestBody AddressDTO addressDTO
+                                                    ){
+
+        AddressDTO addressDTOS = addressServices.updateAddressById(addressId,addressDTO);
+        return new ResponseEntity<>(addressDTOS,HttpStatus.OK);
+    }
+
+
+    @DeleteMapping("/address/{addressId}")
+    public ResponseEntity<String> deleteAddress(@PathVariable Long addressId){
+      String status=   addressServices.deleteAddressById(addressId);
+
+        return new ResponseEntity<>(status,HttpStatus.OK);
+    }
+
 }
