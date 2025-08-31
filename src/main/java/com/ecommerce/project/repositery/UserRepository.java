@@ -21,4 +21,6 @@ public interface UserRepository extends JpaRepository<User,Long> {
     Optional<User> findByUserName(String username);
 
     boolean existsByUserName(@NotBlank @Size(min = 5,max = 30) String userName);
+
+
 }

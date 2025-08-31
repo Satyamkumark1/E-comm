@@ -28,10 +28,13 @@ public class Payment {
     private  String pgResponseMessage;
     private  String pgName;
 
-    public Payment(String pgStatus, String pgPaymentId, String pgResponseMessage, String pgName) {
+
+
+    public Payment(String paymentMethod, String pgPaymentId, String pgStatus, String pgName, String pgResponseMessage) {
         this.pgStatus = pgStatus;
         this.pgPaymentId = pgPaymentId;
         this.pgResponseMessage = pgResponseMessage;
         this.pgName = pgName;
+        this.paymentMethod =paymentMethod;
     }
 }
