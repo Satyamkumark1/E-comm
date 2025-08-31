@@ -23,8 +23,7 @@ import java.util.stream.Stream;
 @Service
 public class CartServiceImpl implements CartService{
 
-    @Autowired
-    private  CartRepository cartRepository;
+    private final CartRepository cartRepository;
 
     @Autowired
     AuthUtils authUtil;
@@ -38,6 +37,9 @@ public class CartServiceImpl implements CartService{
     @Autowired
     ModelMapper modelMapper;
 
+    public CartServiceImpl(CartRepository cartRepository) {
+        this.cartRepository = cartRepository;
+    }
 
 
     @Override
@@ -105,8 +107,7 @@ public class CartServiceImpl implements CartService{
         Cart cart = new Cart();
         cart.setTotalPrice(0.00);
         cart.setUser(authUtil.loggedInUser());
-         Cart newCart =cartRepository.save(cart);
-         return newCart;
+        return cartRepository.save(cart);
 
 
     }
@@ -265,7 +266,7 @@ public class CartServiceImpl implements CartService{
         cart.setTotalPrice(cartPrice +
                 (cartItem.getProductPrice() * cartItem.getQuantity()));
 
-        cartItem = cartItemRepositery.save(cartItem);
+        cartItemRepositery.save(cartItem);
 
     }
 
