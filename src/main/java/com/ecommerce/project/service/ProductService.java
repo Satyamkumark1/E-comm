@@ -30,6 +30,8 @@ public interface ProductService {
 
     ProductDTO updateProductImageByProductId(Long productId, MultipartFile im) throws IOException;
 
+    ProductDTO updateProductImagesByProductId(Long productId, MultipartFile[] images) throws IOException;
+
 
     ProductResponse createBulkProducts(Long categoryId, @Valid List<ProductDTO> productDTOS);
 }

@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface OrderRepositery extends JpaRepository<Order,Long> {
+    java.util.List<Order> findAllByEmail(String emailId);
 }

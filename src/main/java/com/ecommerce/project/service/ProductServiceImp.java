@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -83,10 +84,6 @@ public class  ProductServiceImp implements ProductService{
         Page<Product> productsPage = productRepositery.findAll(pageableDetails);
 
         List<Product> product = productsPage.getContent();
-
-        if (product.isEmpty()) {
-            throw new ApiException("No Products Exist");
-        }
 
         List<ProductDTO> productDTOS = product.stream()
                 .map(dto -> modelMapper.map(dto, ProductDTO.class))
@@ -184,14 +181,16 @@ public class  ProductServiceImp implements ProductService{
 
          Product product = modelMapper.map(productDTO, Product.class);
 
-         //Setting Updated Values
-         productFromDb.setProductName(product.getProductName());
-         productFromDb.setPrice(product.getPrice());
-         productFromDb.setDescription(product.getDescription());
-         productFromDb.setDiscount(product.getDiscount());
-         productFromDb.setImage(product.getImage());
-         productFromDb.setQuantity(product.getQuantity());
-         productFromDb.setSpecialPrice(product.getSpecialPrice());
+          productFromDb.setProductName(product.getProductName());
+          productFromDb.setPrice(product.getPrice());
+          productFromDb.setDescription(product.getDescription());
+          productFromDb.setDiscount(product.getDiscount());
+          productFromDb.setImage(product.getImage());
+          if (product.getImages() != null && !product.getImages().isEmpty()) {
+              productFromDb.setImages(product.getImages());
+          }
+          productFromDb.setQuantity(product.getQuantity());
+          productFromDb.setSpecialPrice(product.getSpecialPrice());
 
          // Saving the updated value
         Product savedProduct = productRepositery.save(productFromDb);
@@ -240,10 +239,36 @@ public class  ProductServiceImp implements ProductService{
 
         //Updating the new file name to the product
         productFromDb.setImage(filename);
+        productFromDb.getImages().clear();
+        productFromDb.getImages().add(filename);
 
         //Save update
        Product savedProduct = productRepositery.save(productFromDb);
 
+        return modelMapper.map(savedProduct, ProductDTO.class);
+    }
+
+    @Override
+    public ProductDTO updateProductImagesByProductId(Long productId, MultipartFile[] images) throws IOException {
+        Product productFromDb = productRepositery.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("product", "productId", productId));
+
+        String path = "images/";
+        List<String> fileNames = new ArrayList<>();
+
+        for (MultipartFile file : images) {
+            if (file != null && !file.isEmpty()) {
+                String filename = uploadImage(path, file);
+                fileNames.add(filename);
+            }
+        }
+
+        if (!fileNames.isEmpty()) {
+            productFromDb.setImage(fileNames.get(0));
+            productFromDb.setImages(fileNames);
+        }
+
+        Product savedProduct = productRepositery.save(productFromDb);
         return modelMapper.map(savedProduct, ProductDTO.class);
     }
 

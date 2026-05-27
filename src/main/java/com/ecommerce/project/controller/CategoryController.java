@@ -21,9 +21,7 @@ public class CategoryController {
     @Autowired
     private CategoryService categoryService;
 
-
-
-
+    
     //Getting all  categories
     @RequestMapping(value = "/public/categories", method = RequestMethod.GET)
     public ResponseEntity<CategoryResponse> getAllCategories(
@@ -39,7 +37,7 @@ public class CategoryController {
     }
 
     //Creating  Category
-    @RequestMapping(value = "/public/categories", method = RequestMethod.POST)
+    @PostMapping("/admin/categories")
     public ResponseEntity<CategoryDTO> createCategory( @Valid @RequestBody CategoryDTO categoryDTO){
        CategoryDTO savedCategoryDTO = categoryService.createCategory(categoryDTO);
         return new ResponseEntity<>(savedCategoryDTO,HttpStatus.CREATED);

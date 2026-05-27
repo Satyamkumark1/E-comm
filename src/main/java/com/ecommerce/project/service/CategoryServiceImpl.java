@@ -46,10 +46,6 @@ public class CategoryServiceImpl implements CategoryService {
         // Extract the actual list of categories from the page
         List<Category>  categories = categoryPage.getContent();
 
-        // If there are no categories found, throw a custom exception
-        if (categories.isEmpty()){
-            throw new ApiException("No category created till now");
-        }
         //Mapping models
         // Category -> CategoryDTO object usinf ModelMapper
         List<CategoryDTO> categoryDTOList = categories.stream()

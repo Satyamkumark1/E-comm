@@ -90,13 +90,15 @@ public class WebSecurity {
                                 )
                 )
                 .authorizeHttpRequests(auth ->         // Authorization rules for endpoints.
-                        auth.requestMatchers("/api/auth/**").permitAll()
+                        auth.requestMatchers("/api/auth/signup").permitAll()
+                                .requestMatchers("/api/auth/**").permitAll()
                                 .requestMatchers("/api/carts/**").permitAll()
-                                .requestMatchers("/api/public/categories").permitAll()// Public: login/register/token refresh endpoints.
+                                .requestMatchers("/api/public/**").permitAll()
+                                .requestMatchers("/api/products/**").permitAll()
                                 .requestMatchers("/v3/api-docs/**").permitAll()
-                                .requestMatchers("/h2-console/**").permitAll()
                                 .requestMatchers("/swagger-ui/**").permitAll()   // Public: Swagger UI.
-                                .requestMatchers("/api/admin/**").permitAll()    // ⚠ Currently PUBLIC — likely unintended.
+                                .requestMatchers("/api/admin/**").hasRole("ADMIN")    // Admin only
+                                .requestMatchers("/api/seller/**").hasAnyRole("SELLER", "ADMIN")  // Sellers and admins
                                 .requestMatchers("/api/test/**").permitAll()
                                 .requestMatchers("/images/**").permitAll()
                                 .anyRequest().authenticated()
@@ -105,9 +107,6 @@ public class WebSecurity {
         http.addFilterBefore(authenticationJwtTokenFilter(),
                 UsernamePasswordAuthenticationFilter.class
         );
-        http.headers(headers ->headers.frameOptions(
-                HeadersConfigurer.FrameOptionsConfig::sameOrigin
-        ));
         return http.build();
     }
 
@@ -154,31 +153,23 @@ public class WebSecurity {
                 userRepository.save(user1);
             }
 
-            if (!userRepository.existsByUserName("seller1")) {
-                User seller1 = new User("seller1", "seller1@example.com", passwordEncoder.encode("password2"));
-                userRepository.save(seller1);
-            }
-
-            if (!userRepository.existsByUserName("admin")) {
-                User admin = new User("admin", "admin@example.com", passwordEncoder.encode("adminPass"));
-                userRepository.save(admin);
-            }
-
-            // Update roles for existing users
-            userRepository.findByUserName("user1").ifPresent(user -> {
-                user.setRoles(userRoles);
-                userRepository.save(user);
+            // Force create or update seller1
+            User seller1 = userRepository.findByUserName("seller1").orElseGet(() -> {
+                User newSeller = new User("seller1", "seller1@example.com", passwordEncoder.encode("password2"));
+                return userRepository.save(newSeller);
             });
+            seller1.setPassword(passwordEncoder.encode("password2"));
+            seller1.setRoles(sellerRoles);
+            userRepository.save(seller1);
 
-            userRepository.findByUserName("seller1").ifPresent(seller -> {
-                seller.setRoles(sellerRoles);
-                userRepository.save(seller);
+            // Force create or update admin
+            User admin = userRepository.findByUserName("admin").orElseGet(() -> {
+                User newAdmin = new User("admin", "admin@example.com", passwordEncoder.encode("adminPass"));
+                return userRepository.save(newAdmin);
             });
-
-            userRepository.findByUserName("admin").ifPresent(admin -> {
-                admin.setRoles(adminRoles);
-                userRepository.save(admin);
-            });
+            admin.setPassword(passwordEncoder.encode("adminPass"));
+            admin.setRoles(adminRoles);
+            userRepository.save(admin);
         };
     }
 

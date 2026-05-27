@@ -24,6 +24,12 @@ public class Product {
     private  String description;
     private double discount;
     private String image;
+
+    @ElementCollection
+    @CollectionTable(name = "product_images", joinColumns = @JoinColumn(name = "product_id"))
+    @Column(name = "image_name")
+    private List<String> images = new ArrayList<>();
+
     private double price;
     private String productName;
     private Integer quantity;
