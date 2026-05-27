@@ -222,10 +222,14 @@ public class  ProductServiceImp implements ProductService{
                 .orElseThrow(()-> new ResourceNotFoundException("product","productId",productId));
         List<Cart> carts = cartRepository.findCartByProductId(productId);
         carts.forEach(cart ->  cartService.deleteProductFromCartById(cart.getId(),productId));
+
+        // Map to DTO before deleting from DB
+        ProductDTO productDTO = modelMapper.map(productFromDb, ProductDTO.class);
+
         productRepositery.delete(productFromDb);
 
-        //returning saved product by mapping to Product Dto
-        return modelMapper.map(productFromDb,ProductDTO.class);
+        //returning saved product DTO
+        return productDTO;
     }
 
     @Override

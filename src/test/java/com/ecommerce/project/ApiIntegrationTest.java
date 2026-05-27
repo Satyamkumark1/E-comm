@@ -46,6 +46,7 @@ public class ApiIntegrationTest {
         signUpRequest.setUserName("testuser_full");
         signUpRequest.setEmail("testuser_full@example.com");
         signUpRequest.setPassword("password123");
+        signUpRequest.setRole(java.util.Collections.singleton("admin"));
         
         mockMvc.perform(post("/api/auth/signup")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -78,7 +79,7 @@ public class ApiIntegrationTest {
         CategoryDTO categoryDTO = new CategoryDTO();
         categoryDTO.setCategoryName("Mobiles");
 
-        MvcResult result = mockMvc.perform(post("/api/public/categories")
+        MvcResult result = mockMvc.perform(post("/api/admin/categories")
                 .cookie(jwtCookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(categoryDTO)))
